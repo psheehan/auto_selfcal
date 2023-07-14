@@ -240,14 +240,14 @@ def run_selfcal(selfcal_library, target, band, solints, solint_snr, solint_snr_p
                     selfcal_library[target][band][vis][solint]['gaintable']=applycal_gaintable[vis]
                     selfcal_library[target][band][vis][solint]['iteration']=iteration+0
                     selfcal_library[target][band][vis][solint]['spwmap']=applycal_spwmap[vis]
-                    selfcal_library[target][band][vis][solint]['applycal_mode']=applycal_mode[band][iteration]+''
+                    selfcal_library[target][band][vis][solint]['applycal_mode']=applymode+'' if iapplymode == 0 else 'calflag'
                     selfcal_library[target][band][vis][solint]['applycal_interpolate']=applycal_interpolate[vis]
                     selfcal_library[target][band][vis][solint]['gaincal_combine']=gaincal_combine[band][iteration]+''
                     for fid in np.intersect1d(selfcal_library[target][band]['sub-fields-to-selfcal'],list(selfcal_library[target][band]['sub-fields-fid_map'][vis].keys())):
                         selfcal_library[target][band][fid][vis][solint]['gaintable']=applycal_gaintable[vis]
                         selfcal_library[target][band][fid][vis][solint]['iteration']=iteration+0
                         selfcal_library[target][band][fid][vis][solint]['spwmap']=applycal_spwmap[vis]
-                        selfcal_library[target][band][fid][vis][solint]['applycal_mode']=applycal_mode[band][iteration]+''
+                        selfcal_library[target][band][fid][vis][solint]['applycal_mode']=applymode+'' if iapplymode == 0 else 'calflag'
                         selfcal_library[target][band][fid][vis][solint]['applycal_interpolate']=applycal_interpolate[vis]
                         selfcal_library[target][band][fid][vis][solint]['gaincal_combine']=gaincal_combine[band][iteration]+''
 
@@ -395,13 +395,13 @@ def run_selfcal(selfcal_library, target, band, solints, solint_snr, solint_snr_p
                         selfcal_library[target][band][vis][solint]['gaintable']=applycal_gaintable[vis]
                         selfcal_library[target][band][vis][solint]['iteration']=iteration+0
                         selfcal_library[target][band][vis][solint]['spwmap']=applycal_spwmap[vis]
-                        selfcal_library[target][band][vis][solint]['applycal_mode']=applycal_mode[band][iteration]+''
+                        selfcal_library[target][band][vis][solint]['applycal_mode']=applymode+'' if iapplymode == 0 else 'calflag'
                         selfcal_library[target][band][vis][solint]['applycal_interpolate']=applycal_interpolate[vis]
                         selfcal_library[target][band][vis][solint]['gaincal_combine']=gaincal_combine[band][iteration]+''
                         selfcal_library[target][band][fid][vis][solint]['gaintable']=applycal_gaintable[vis]
                         selfcal_library[target][band][fid][vis][solint]['iteration']=iteration+0
                         selfcal_library[target][band][fid][vis][solint]['spwmap']=applycal_spwmap[vis]
-                        selfcal_library[target][band][fid][vis][solint]['applycal_mode']=applycal_mode[band][iteration]+''
+                        selfcal_library[target][band][fid][vis][solint]['applycal_mode']=applymode+'' if iapplymode == 0 else 'calflag'
                         selfcal_library[target][band][fid][vis][solint]['applycal_interpolate']=applycal_interpolate[vis]
                         selfcal_library[target][band][fid][vis][solint]['gaincal_combine']=gaincal_combine[band][iteration]+''
 
