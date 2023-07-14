@@ -98,7 +98,7 @@ def run_selfcal(selfcal_library, target, band, solints, solint_snr, solint_snr_p
 
          # Loop through up to two times. On the first attempt, try applymode = 'calflag' (assuming this is requested by the user). On the
          # second attempt, use applymode = 'calonly'.
-         for applymode in np.unique([applycal_mode[band][iteration],'calonly']):
+         for iapplymode, applymode in enumerate(np.unique([applycal_mode[band][iteration],'calonly'])):
              for vis in vislist:
                 ##
                 ## Restore original flagging state each time before applying a new gaintable
@@ -109,7 +109,7 @@ def run_selfcal(selfcal_library, target, band, solints, solint_snr, solint_snr_p
                    flagmanager(vis=vis,mode='save',versionname='selfcal_starting_flags_'+sani_target)
 
              # We need to redo saving the model now that we have potentially unflagged some data.
-             if applymode == "calflag":
+             if iapplymode == 0:
                  tclean_wrapper(vislist,sani_target+'_'+band+'_'+solint+'_'+str(iteration),
                              band_properties,band,telescope=telescope,nsigma=selfcal_library[target][band]['nsigma'][iteration], scales=[0],
                              threshold=str(selfcal_library[target][band]['nsigma'][iteration]*selfcal_library[target][band]['RMS_NF_curr'])+'Jy',
@@ -531,7 +531,7 @@ def run_selfcal(selfcal_library, target, band, solints, solint_snr, solint_snr_p
 
                 # If iteration two, try restricting to just the antennas with enough unflagged data.
                 # Should we also restrict to just long baseline antennas?
-                if applymode == "calonly":
+                if iapplymode == 1:
                     # Make a copy of the caltable before unflagging, for reference.
                     os.system("cp -r "+sani_target+'_'+vis+'_'+band+'_'+solint+'_'+str(iteration)+'_'+\
                             solmode[band][iteration]+'.g '+sani_target+'_'+vis+'_'+band+'_'+solint+'_'+str(iteration)+'_'+\
@@ -666,7 +666,7 @@ def run_selfcal(selfcal_library, target, band, solints, solint_snr, solint_snr_p
                                  interp=selfcal_library[target][band][fid][vis][solint]['applycal_interpolate'], calwt=False,\
                                  spwmap=selfcal_library[target][band][fid][vis][solint]['spwmap'],\
                                  #applymode=applymode,field=target,spw=selfcal_library[target][band][vis]['spws'])
-                                 applymode='calflag',field=str(selfcal_library[target][band]['sub-fields-fid_map'][vis][fid]),\
+                                 applymode=applymode if iapplymode == 0 else 'calflag',field=str(selfcal_library[target][band]['sub-fields-fid_map'][vis][fid]),\
                                  spw=selfcal_library[target][band][vis]['spws'])
                     else:
                         if selfcal_library[target][band][fid]['SC_success']:
