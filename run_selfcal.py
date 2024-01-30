@@ -479,6 +479,12 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, telescope, n_ants, 
                  continue
              elif delta_beamarea > delta_beam_thresh:
                  do_fallback_combinespw=False  # turn the switch off since this is another repeat
+
+                 # Remove all but combinespw modes for this iteration and subsequent ones.
+                 for vis in vislist:
+                     selfcal_plan[vis]['solint_settings'][solint]['final_mode']='combinespw' 
+                     remove_modes(selfcal_plan,vis,iteration,exclude_start=False)
+
                  print('****************Attempting applymode="calonly" fallback*************')
                  # Loop through up to two times. On the first attempt, try applymode = 'calflag' (assuming this is requested by the user). On the
                  # second attempt, use applymode = 'calonly'.
