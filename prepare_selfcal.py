@@ -470,10 +470,15 @@ def prepare_selfcal(vislist,
                      if solint == "inf_EB":
                          solint_name = "inf_EB"
                      else:
-                         solint_name = "solint"+str(subscan_count)
                          if 'ap' in solint:
-                             solint_name += '_ap'
-                         subscan_count += 1
+                             solint_name = 'ap'
+                         else:
+                             solint_name = 'p'
+                         solint_name += str(subscan_count)
+                         if solint == 'int':
+                             subscan_count = 0
+                         else:
+                             subscan_count += 1
 
                      if solint_name not in selfcal_plan[target][band]['solints']:
                          selfcal_plan[target][band]['solints'].append(solint_name)
