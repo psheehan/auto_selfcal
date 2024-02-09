@@ -3492,7 +3492,7 @@ def get_gaintable_flagging_stats(gc_dict_list,spwlist):
 
 
 def unflag_failed_antennas(vis, caltable, flagged_fraction=0.25, only_long_baselines=False, solnorm=True, calonly_max_flagged=0., spwmap=[], 
-        fb_to_prev_solint=False, solints=[], iteration=0, plot=False, plot_directory="./"):
+        fb_to_prev_solint=False, solints=[], final_modes=[], iteration=0, plot=False, plot_directory="./"):
     tb.open(caltable, nomodify=plot) # Because we only modify if we aren't plotting, i.e. in the selfcal loop itself plot=False
     antennas = tb.getcol("ANTENNA1")
     flags = tb.getcol("FLAG")
@@ -3710,13 +3710,14 @@ def unflag_failed_antennas(vis, caltable, flagged_fraction=0.25, only_long_basel
     # Check whether earlier solints have acceptable solutions, and if so use, those instead.
 
     if fb_to_prev_solint:
-        if "ap" in solints[iteration]:
-            for i in range(len(solints)):
-                if "ap" in solints[i]:
+        min_iter = iteration
+        for i in range(1,iteration)[::-1]:
+            if "combinespw" in final_modes[i]:
+                if "ap" in solints[iteration]:
+                    if "ap" in solints[i]:
+                        min_iter = i
+                else:
                     min_iter = i
-                    break
-        else:
-            min_iter = 1
 
         for i, solint in enumerate(solints[min_iter:iteration][::-1]):
             print("Testing solint ", solint)

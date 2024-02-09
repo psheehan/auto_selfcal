@@ -484,7 +484,7 @@ def gaincal_wrapper(selfcal_library, selfcal_plan, target, band, vis, solint, ap
         # reference antenna.
         if unflag_fb_to_prev_solint:
             for it, sint in enumerate(selfcal_plan['solints'][0:iteration+1]):
-                if not os.path.exists(sani_target+'_'+vis+'_'+band+'_'+sint+'_'+str(it)+'_'+selfcal_plan['solmode'][it]+'_'+selfcal_library[vis][solint]['final_mode']+'.g'):
+                if not os.path.exists(sani_target+'_'+vis+'_'+band+'_'+sint+'_'+str(it)+'_'+selfcal_plan['solmode'][it]+'_'+selfcal_library[vis][sint]['final_mode']+'.g') or 'combinespw' not in selfcal_library[vis][sint]['final_mode']:
                     continue
 
                 # If a previous iteration went through the unflagging routine, it is possible that some antennas fell back to
@@ -492,13 +492,13 @@ def gaincal_wrapper(selfcal_library, selfcal_plan, target, band, vis, solint, ap
                 # a different time interval. So to be safe, we go back to the pre-pass solutions and then re-run the passing.
                 # We could probably check more carefully whether this is the case to avoid having to do this... but the 
                 # computing time isn't significant so it's easy just to run through again.
-                if os.path.exists(sani_target+'_'+vis+'_'+band+'_'+sint+'_'+str(it)+'_'+selfcal_plan['solmode'][it]+'_'+selfcal_library[vis][solint]['final_mode']+'.pre-pass.g'):
-                    rerefant(vis, sani_target+'_'+vis+'_'+band+'_'+sint+'_'+str(it)+'_'+selfcal_plan['solmode'][it]+'_'+selfcal_library[vis][solint]['final_mode']+'.pre-pass.g', \
+                if os.path.exists(sani_target+'_'+vis+'_'+band+'_'+sint+'_'+str(it)+'_'+selfcal_plan['solmode'][it]+'_'+selfcal_library[vis][sint]['final_mode']+'.pre-pass.g'):
+                    rerefant(vis, sani_target+'_'+vis+'_'+band+'_'+sint+'_'+str(it)+'_'+selfcal_plan['solmode'][it]+'_'+selfcal_library[vis][sint]['final_mode']+'.pre-pass.g', \
                             refant=selfcal_library[vis]["refant"], refantmode=refantmode if 'inf_EB' not in sint else 'flex')
 
-                    os.system("rm -rf "+sani_target+'_'+vis+'_'+band+'_'+sint+'_'+str(it)+'_'+selfcal_plan['solmode'][it]+'_'+selfcal_library[vis][solint]['final_mode']+'.g')
-                    os.system("cp -r "+sani_target+'_'+vis+'_'+band+'_'+sint+'_'+str(it)+'_'+selfcal_plan['solmode'][it]+'_'+selfcal_library[vis][solint]['final_mode']+'.pre-pass.g '+\
-                            sani_target+'_'+vis+'_'+band+'_'+sint+'_'+str(it)+'_'+selfcal_plan['solmode'][it]+'_'+selfcal_library[vis][solint]['final_mode']+'.g')
+                    os.system("rm -rf "+sani_target+'_'+vis+'_'+band+'_'+sint+'_'+str(it)+'_'+selfcal_plan['solmode'][it]+'_'+selfcal_library[vis][sint]['final_mode']+'.g')
+                    os.system("cp -r "+sani_target+'_'+vis+'_'+band+'_'+sint+'_'+str(it)+'_'+selfcal_plan['solmode'][it]+'_'+selfcal_library[vis][sint]['final_mode']+'.pre-pass.g '+\
+                            sani_target+'_'+vis+'_'+band+'_'+sint+'_'+str(it)+'_'+selfcal_plan['solmode'][it]+'_'+selfcal_library[vis][sint]['final_mode']+'.g')
 
                     if sint == "inf_EB" and len(selfcal_library[vis][sint]["spwmap"][0]) > 0:
                         unflag_spwmap = selfcal_library[vis][sint]["spwmap"][0]
@@ -506,12 +506,14 @@ def gaincal_wrapper(selfcal_library, selfcal_plan, target, band, vis, solint, ap
                         unflag_spwmap = []
 
                     unflag_failed_antennas(vis, sani_target+'_'+vis+'_'+band+'_'+sint+'_'+str(it)+'_'+\
-                            selfcal_plan['solmode'][it]+'_'+selfcal_library[vis][solint]['final_mode']+'.g', flagged_fraction=0.25, solnorm=solnorm, \
+                            selfcal_plan['solmode'][it]+'_'+selfcal_library[vis][sint]['final_mode']+'.g', flagged_fraction=0.25, solnorm=solnorm, \
                             only_long_baselines=selfcal_plan['solmode'][it]=="ap" if unflag_only_lbants and \
                             unflag_only_lbants_onlyap else unflag_only_lbants, calonly_max_flagged=calonly_max_flagged, \
-                            spwmap=unflag_spwmap, fb_to_prev_solint=unflag_fb_to_prev_solint, solints=selfcal_plan['solints'], iteration=it)
+                            spwmap=unflag_spwmap, fb_to_prev_solint=unflag_fb_to_prev_solint, solints=selfcal_plan['solints'], \
+                            final_modes=[selfcal_library[vis][s]['final_mode'] if s in selfcal_library[vis] else '' for s in \
+                            selfcal_plan['solints'][0:iteration]], iteration=it)
                 else:
-                    rerefant(vis, sani_target+'_'+vis+'_'+band+'_'+sint+'_'+str(it)+'_'+selfcal_plan['solmode'][it]+'_'+selfcal_library[vis][solint]['final_mode']+'.g', \
+                    rerefant(vis, sani_target+'_'+vis+'_'+band+'_'+sint+'_'+str(it)+'_'+selfcal_plan['solmode'][it]+'_'+selfcal_library[vis][sint]['final_mode']+'.g', \
                             refant=selfcal_library[vis]["refant"], refantmode=refantmode if 'inf_EB' not in sint else 'flex')
         else:
             os.system("cp -r "+sani_target+'_'+vis+'_'+band+'_'+solint+'_'+str(iteration)+'_'+selfcal_plan['solmode'][iteration]+'_'+selfcal_library[vis][solint]['final_mode']+'.g '+\
@@ -545,7 +547,9 @@ def gaincal_wrapper(selfcal_library, selfcal_plan, target, band, vis, solint, ap
                 selfcal_plan['solmode'][iteration]+'_'+selfcal_library[vis][solint]['final_mode']+'.g', flagged_fraction=0.25, solnorm=solnorm, \
                 only_long_baselines=selfcal_plan['solmode'][iteration]=="ap" if unflag_only_lbants and unflag_only_lbants_onlyap else \
                 unflag_only_lbants, calonly_max_flagged=calonly_max_flagged, spwmap=unflag_spwmap, \
-                fb_to_prev_solint=unflag_fb_to_prev_solint, solints=selfcal_plan['solints'], iteration=iteration)
+                fb_to_prev_solint=unflag_fb_to_prev_solint, solints=selfcal_plan['solints'], \
+                final_modes=[selfcal_library[vis][s]['final_mode'] if s in selfcal_library[vis] else '' for s in \
+                selfcal_plan['solints'][0:iteration]], iteration=iteration)
 
     # Do some post-gaincal cleanup for mosaics.
     if selfcal_library['obstype'] == 'mosaic' or mode == "cocal":
