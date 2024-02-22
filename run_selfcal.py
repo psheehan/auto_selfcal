@@ -58,7 +58,7 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, telescope, n_ants, 
 
       print("Solving for solint="+selfcal_plan['solints'][iteration])
       for vis in vislist:
-          print("    "+vis+": "+selfcal_plan['solints'][iteration])
+          print("    "+vis+": "+selfcal_plan[vis]['solint_settings'][selfcal_plan['solints'][iteration]]['interval'])
 
 
       # Set some cocal parameters.
@@ -86,7 +86,7 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, telescope, n_ants, 
          # make sure the last phase-only selfcal table gets pre-applied
          # solints that use combinespw don't get pre-apply label by default
          for vis in vislist:
-             selfcal_plan[vis]['solint_settings'][selfcal_library['final_phase_solint']]['preapply_this_gaintable']=True
+             selfcal_plan[vis]['solint_settings'][selfcal_library[vis]['final_phase_solint']]['preapply_this_gaintable']=True
          
       if mode == "selfcal":
           remove_vis = []
@@ -427,8 +427,9 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, telescope, n_ants, 
                selfcal_library[vis]['gaincal_combine_final']=selfcal_library[vis][solint]['gaincal_combine']
                selfcal_library[vis][solint]['Pass']=True
                selfcal_library[vis][solint]['Fail_Reason']='None'
-            if selfcal_plan['solmode'][iteration]=='p':            
-               selfcal_library['final_phase_solint']=solint
+               if selfcal_plan['solmode'][iteration]=='p':            
+                   selfcal_library[vis]['final_phase_solint']=solint
+                   selfcal_library[vis]['final_solint']=solint
 
             selfcal_library['final_solint']=solint
             selfcal_library['final_solint_mode']=selfcal_plan['solmode'][iteration]
@@ -438,7 +439,7 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, telescope, n_ants, 
                 if field_by_field_success[ind]:
                     selfcal_library[fid]['SC_success']=True
                     selfcal_library[fid]['Stop_Reason']='None'
-                    for vis in selfcal_library[fid]['vislist']:
+                    for vis in selfcal_library[fid]['vislist-to-gaincal']:
                        selfcal_library[fid][vis]['gaintable_final']=selfcal_library[fid][vis][solint]['gaintable']
                        selfcal_library[fid][vis]['spwmap_final']=selfcal_library[fid][vis][solint]['spwmap'].copy()
                        selfcal_library[fid][vis]['applycal_mode_final']=selfcal_library[fid][vis][solint]['applycal_mode']
@@ -446,8 +447,9 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, telescope, n_ants, 
                        selfcal_library[fid][vis]['gaincal_combine_final']=selfcal_library[fid][vis][solint]['gaincal_combine']
                        selfcal_library[fid][vis][solint]['Pass']=True
                        selfcal_library[fid][vis][solint]['Fail_Reason']='None'
-                    if selfcal_plan['solmode'][iteration]=='p':            
-                       selfcal_library[fid]['final_phase_solint']=solint
+                       if selfcal_plan['solmode'][iteration]=='p':            
+                           selfcal_library[fid][vis]['final_phase_solint']=solint
+                           selfcal_library[fid][vis]['final_solint']=solint
                     selfcal_library[fid]['final_solint']=solint
                     selfcal_library[fid]['final_solint_mode']=selfcal_plan['solmode'][iteration]
                     selfcal_library[fid]['iteration']=iteration
@@ -511,7 +513,7 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, telescope, n_ants, 
          ## if S/N worsens, and/or beam area increases reject current solutions and reapply previous (or revert to origional data)
          ##
 
-         if not selfcal_library[vislist[0]][solint]['Pass']:
+         if not selfcal_library[selfcal_library['vislist-to-gaincal'][0]][solint]['Pass']:
             reason=''
             if (post_SNR <= SNR):
                reason=reason+' S/N decrease'
@@ -535,7 +537,7 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, telescope, n_ants, 
          mosaic_reason = {}
          new_fields_to_selfcal = []
          for fid in selfcal_library['sub-fields-to-selfcal']:
-             if not selfcal_library[fid][selfcal_library[fid]['vislist'][0]][solint]['Pass']:
+             if not selfcal_library[fid][selfcal_library[fid]['vislist-to-gaincal'][0]][solint]['Pass']:
                  mosaic_reason[fid]=''
                  if (post_mosaic_SNR[fid] <= mosaic_SNR[fid]):
                     mosaic_reason[fid]=mosaic_reason[fid]+' SNR decrease'
@@ -586,12 +588,14 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, telescope, n_ants, 
 
          # If any of the sub-fields passed, and the whole mosaic passed, then we can move on to the next solint, otherwise we have to back out.
          if selfcal_library[vislist[0]][solint]['Pass'] == True and \
-                 np.any([selfcal_library[fid][selfcal_library[fid]['vislist'][0]][solint]['Pass'] == True for fid in \
+                 np.any([selfcal_library[fid][selfcal_library[fid]['vislist-to-gaincal'][0]][solint]['Pass'] == True for fid in \
                  selfcal_library['sub-fields-to-selfcal']]):
              if mode == "selfcal" and (iteration < len(selfcal_plan['solints'])-1) and (selfcal_library[vis][solint]['SNR_post'] > \
                      selfcal_library['SNR_orig']): #(iteration == 0) and 
                 print('Updating solint = '+selfcal_plan['solints'][iteration+1]+' SNR')
                 for vis in vislist:
+                    if selfcal_plan['solints'][iteration+1] not in selfcal_plan[vis]['solint_snr']:
+                        continue
                     print(vis+' was: ',selfcal_plan[vis]['solint_snr'][selfcal_plan['solints'][iteration+1]])
                     get_SNR_self_update(vis, selfcal_library,selfcal_plan,n_ants,solint,selfcal_plan['solints'][iteration+1],selfcal_plan[vis]['integration_time'],
                             selfcal_plan[vis]['solint_snr'])
@@ -599,6 +603,8 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, telescope, n_ants, 
 
                 for fid in selfcal_library['sub-fields-to-selfcal']:
                     for vis in vislist:
+                        if selfcal_plan['solints'][iteration+1] not in selfcal_plan[fid][vis]['solint_snr_per_field']:
+                            continue
                         print('Field '+str(fid)+' '+vis+' was: ',selfcal_plan[fid][vis]['solint_snr_per_field'][selfcal_plan['solints'][iteration+1]])
                         get_SNR_self_update(vis, selfcal_library[fid],selfcal_plan,n_ants,solint,selfcal_plan['solints'][iteration+1],
                                 selfcal_plan[vis]['integration_time'],selfcal_plan[fid][vis]['solint_snr_per_field'])
@@ -606,7 +612,7 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, telescope, n_ants, 
 
              # If not all fields succeed for inf_EB or scan_inf/inf, depending on mosaic or single field, then don't go on to amplitude selfcal,
              # even if *some* fields succeeded.
-             if iteration <= 1 and ((not np.all([selfcal_library[fid][selfcal_library[fid]['vislist'][0]][solint]['Pass'] == True for fid in \
+             if iteration <= 1 and ((not np.all([selfcal_library[fid][selfcal_library[fid]['vislist-to-gaincal'][0]][solint]['Pass'] == True for fid in \
                     selfcal_library['sub-fields-to-selfcal']])) or len(selfcal_library['sub-fields-to-selfcal']) < \
                     len(selfcal_library['sub-fields'])) and do_amp_selfcal:
                  print("***** NOTE: Amplitude self-calibration turned off because not all fields succeeded at non-inf_EB phase self-calibration")

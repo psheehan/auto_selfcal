@@ -18,6 +18,8 @@ def gaincal_wrapper(selfcal_library, selfcal_plan, target, band, vis, solint, ap
     ## Solve gain solutions per MS, target, solint, and band
     ##
 
+    print(selfcal_plan['solmode'])
+    print(iteration)
     os.system('rm -rf '+sani_target+'_'+vis+'_'+band+'_'+solint+'_'+str(iteration)+'_'+selfcal_plan['solmode'][iteration]+'*.g')
     ##
     ## Set gaincal parameters depending on which iteration and whether to use combine=spw for inf_EB or not
@@ -42,7 +44,7 @@ def gaincal_wrapper(selfcal_library, selfcal_plan, target, band, vis, solint, ap
             if selfcal_plan['solmode'][iteration]=='p':
                 previous_solint = "inf_EB"
             else:
-                previous_solint = selfcal_library['final_phase_solint']
+                previous_solint = selfcal_library[vis]['final_phase_solint']
         gaincal_spwmap=[]
         gaincal_preapply_gaintable=[]
         gaincal_interpolate=[]
@@ -77,7 +79,7 @@ def gaincal_wrapper(selfcal_library, selfcal_plan, target, band, vis, solint, ap
         # Revert back to applying the inf_EB solution if calculate_inf_EB_fb_anyways, i.e. we just use the inf_EB_fb solution
         # for gaincal.
         if mode == "cocal":
-            if selfcal_library['final_solint'] == 'inf_EB' and calculate_inf_EB_fb_anyways:
+            if selfcal_library[vis]['final_solint'] == 'inf_EB' and calculate_inf_EB_fb_anyways:
                 previous_solint = "inf_EB"
 
         fallback=''
@@ -350,6 +352,8 @@ def gaincal_wrapper(selfcal_library, selfcal_plan, target, band, vis, solint, ap
             applycal_interpolate=[]
             applycal_spwmap=[]
             for j in range(current_solint_index):
+              if not selfcal_plan['solints'][j] in selfcal_plan[vis]['solint_settings']:
+                  continue
               if selfcal_plan[vis]['solint_settings'][selfcal_plan['solints'][j]]['preapply_this_gaintable'] and selfcal_plan[vis]['solint_settings'][selfcal_plan['solints'][j]]['solmode']=='p':
                  gaincal_preapply_gaintable.append(selfcal_plan[vis]['solint_settings'][selfcal_plan['solints'][j]]['accepted_gaintable'])
                  gaincal_spwmap.append(selfcal_plan[vis]['solint_settings'][selfcal_plan['solints'][j]]['applycal_spwmap'])

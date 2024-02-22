@@ -449,10 +449,11 @@ def prepare_selfcal(vislist,
           if band in selfcal_library[target]:
              selfcal_plan[target][band] = {}
              selfcal_plan[target][band]['solints'] = []
+             selfcal_plan[target][band]['solmode'] = []
              for vis in selfcal_library[target][band]['vislist']:
                  selfcal_plan[target][band][vis] = {}
                  solints,selfcal_plan[target][band][vis]['integration_time'],selfcal_plan[target][band][vis]['gaincal_combine'], \
-                        selfcal_plan[target][band]['solmode']=get_solints_simple([vis],scantimesdict[band],
+                        tmp_solmodes=get_solints_simple([vis],scantimesdict[band],
                         scannfieldsdict[band],scanstartsdict[band],scanendsdict[band],integrationtimesdict[band],\
                         inf_EB_gaincal_combine,do_amp_selfcal=do_amp_selfcal,mosaic=selfcal_library[target][band]['obstype'] == 'mosaic')
 
@@ -482,6 +483,10 @@ def prepare_selfcal(vislist,
 
                      if solint_name not in selfcal_plan[target][band]['solints']:
                          selfcal_plan[target][band]['solints'].append(solint_name)
+                         if 'ap' in solint_name:
+                             selfcal_plan[target][band]['solmode'].append('ap')
+                         else:
+                             selfcal_plan[target][band]['solmode'].append('p')
 
                      selfcal_plan[target][band][vis]['solint_settings'][solint_name]={}
                      selfcal_plan[target][band][vis]['solint_settings'][solint_name]['interval'] = solint
@@ -490,7 +495,7 @@ def prepare_selfcal(vislist,
 
              print(band,target,selfcal_plan[target][band]['solints'])
              for vis in vislist:
-                print(vis,[selfcal_plan[target][band][vis]['solint_settings'][solint]['interval'] for solint in selfcal_plan[target][band]['solints']])
+                print(vis,[selfcal_plan[target][band][vis]['solint_settings'][solint]['interval'] for solint in selfcal_plan[target][band]['solints'] if solint in selfcal_plan[target][band][vis]['solint_settings']])
 
     ##
     ## estimate per scan/EB S/N using time on source and median scan times
@@ -531,6 +536,8 @@ def plan_selfcal_per_solint(selfcal_library, selfcal_plan,optimize_spw_combine=T
 
              #selfcal_plan[target][band][vis]['solint_settings']={}
              for solint in selfcal_plan[target][band]['solints']:
+                if solint not in selfcal_plan[target][band][vis]['solint_settings']:
+                    continue
                 gaincal_combine=''
                 filename_append=''
                 #selfcal_plan[target][band][vis]['solint_settings'][solint]={}
@@ -617,7 +624,7 @@ def set_clean_thresholds(selfcal_library, selfcal_plan, dividing_factor=-99.0, r
             nsigma_init=np.max([selfcal_library[target][band]['SNR_NF_orig']/dividing_factor_band,5.0])
 
             # count number of amplitude selfcal solints, repeat final clean depth of phase-only for amplitude selfcal
-            n_ap_solints=sum(1 for solint in selfcal_plan[target][band]['solints'] if 'ap' in selfcal_plan[target][band][selfcal_library[target][band]['vislist'][0]]['solint_settings'][solint]['interval'])
+            n_ap_solints=sum(1 for solint in selfcal_plan[target][band]['solints'] if 'ap' in solint)
 
             if rel_thresh_scaling == 'loge':
                 selfcal_library[target][band]['nsigma'] = np.append(np.exp(np.linspace(np.log(nsigma_init),np.log(3.0),\

@@ -989,13 +989,15 @@ def get_SNR_self(selfcal_library,selfcal_plan,n_ant,inf_EB_gaincal_combine,inf_E
    for target in selfcal_library:
     for band in selfcal_library[target].keys():
       for vis in selfcal_library[target][band]['vislist']:
+          solints_per_vis = [solint for solint in selfcal_plan[target][band]['solints'] if solint in selfcal_plan[target][band][vis]['solint_settings']]
+
           selfcal_plan[target][band][vis]['solint_snr'], selfcal_plan[target][band][vis]['solint_snr_per_spw'], selfcal_plan[target][band][vis]['solint_snr_per_bb'] = \
-                  get_SNR_self_individual([vis], selfcal_library[target][band], n_ant, selfcal_plan[target][band]['solints'], 
+                  get_SNR_self_individual([vis], selfcal_library[target][band], n_ant, solints_per_vis, 
                   selfcal_plan[target][band][vis]['solint_settings'],selfcal_plan[target][band][vis]['integration_time'], inf_EB_gaincal_combine, inf_EB_gaintype)
     
           print('Estimated SNR per solint:')
           print(target,band,vis)
-          for solint in selfcal_plan[target][band]['solints']:
+          for solint in solints_per_vis:
             if selfcal_plan[target][band][vis]['solint_settings'][solint]['interval'] == 'inf_EB':
                print('{}: {:0.2f}'.format(solint,selfcal_plan[target][band][vis]['solint_snr'][solint]))
                '''
@@ -1017,15 +1019,16 @@ def get_SNR_self(selfcal_library,selfcal_plan,n_ant,inf_EB_gaincal_combine,inf_E
           selfcal_plan[target][band][fid] = {}
           for vis in selfcal_library[target][band][fid]['vislist']:
                selfcal_plan[target][band][fid][vis] = {}
+               solints_per_vis = [solint for solint in selfcal_plan[target][band]['solints'] if solint in selfcal_plan[target][band][vis]['solint_settings']]
                selfcal_plan[target][band][fid][vis]['solint_snr_per_field'], selfcal_plan[target][band][fid][vis]['solint_snr_per_field_per_spw'], \
                        selfcal_plan[target][band][fid][vis]['solint_snr_per_field_per_bb'] = \
                        get_SNR_self_individual([vis], selfcal_library[target][band][fid], n_ant, 
-                       selfcal_plan[target][band]['solints'], selfcal_plan[target][band][vis]['solint_settings'], \
+                       solints_per_vis, selfcal_plan[target][band][vis]['solint_settings'], \
                        selfcal_plan[target][band][vis]['integration_time'], inf_EB_gaincal_combine, inf_EB_gaintype)
 
                print('Estimated SNR per solint:')
                print(target,band,"field "+str(fid),vis)
-               for solint in selfcal_plan[target][band]['solints']:
+               for solint in solints_per_vis:
                  if selfcal_plan[target][band][vis]['solint_settings'][solint]['interval'] == 'inf_EB':
                     print('{}: {:0.2f}'.format(solint,selfcal_plan[target][band][fid][vis]['solint_snr_per_field'][solint]))
                     '''
@@ -2778,7 +2781,8 @@ def render_per_solint_QA_pages(sclib,selfcal_plan,bands,directory='weblog'):
          
 
          final_solint_to_plot=selfcal_plan[target][band]['solints'][final_solint_index+index_addition-1]
-         keylist=sclib[target][band][vislist[0]].keys()
+         #keylist=sclib[target][band][vislist[0]].keys()
+         keylist = [solint for solint in selfcal_plan[target][band]['solints'] if np.any([solint in sclib[target][band][vis] for vis in vislist])]
          if index_addition == 2 and final_solint_to_plot not in keylist:
            index_addition=index_addition-1
 
@@ -2787,7 +2791,10 @@ def render_per_solint_QA_pages(sclib,selfcal_plan,bands,directory='weblog'):
          #for i in range(final_solint_index+index_addition):
          for i in range(len(selfcal_plan[target][band]['solints'])):
 
-            if selfcal_plan[target][band]['solints'][i] not in keylist or sclib[target][band][vislist[len(vislist)-1]][selfcal_plan[target][band]['solints'][i]]['Pass'] == 'None':
+            representative_vislist = [vis for vis in vislist if selfcal_plan[target][band]['solints'][i] in sclib[target][band][vis]]
+            if len(representative_vislist) == 0:
+               continue
+            if selfcal_plan[target][band]['solints'][i] not in keylist or sclib[target][band][representative_vislist[0]][selfcal_plan[target][band]['solints'][i]]['Pass'] == 'None':
                continue
             htmlOutSolint=open(directory+'/'+target+'_'+band+'_'+selfcal_plan[target][band]['solints'][i]+'.html','w')
             htmlOutSolint.writelines('<html>\n')
@@ -2799,7 +2806,7 @@ def render_per_solint_QA_pages(sclib,selfcal_plan,bands,directory='weblog'):
             htmlOutSolint.writelines('<h2>'+target+' Plots</h2>\n')
             htmlOutSolint.writelines('<h2>'+band+'</h2>\n')
             htmlOutSolint.writelines('<h2>Targets:</h2>\n')
-            keylist=sclib[target][band][vislist[0]].keys()
+            #keylist=sclib[target][band][vislist[0]].keys()
             solints_string=''
             for j in range(final_solint_index+index_addition):
                if selfcal_plan[target][band]['solints'][j] not in keylist:
@@ -2813,8 +2820,8 @@ def render_per_solint_QA_pages(sclib,selfcal_plan,bands,directory='weblog'):
 
 
             #must select last key for pre Jan 14th runs since they only wrote pass to the last MS dictionary entry
-            if "Pass" in sclib[target][band][vislist[len(vislist)-1]][selfcal_plan[target][band]['solints'][i]]:
-                passed=sclib[target][band][vislist[len(vislist)-1]][selfcal_plan[target][band]['solints'][i]]['Pass']
+            if "Pass" in sclib[target][band][representative_vislist[-1]][selfcal_plan[target][band]['solints'][i]]:
+                passed=sclib[target][band][representative_vislist[-1]][selfcal_plan[target][band]['solints'][i]]['Pass']
             else:
                 passed = 'None'
 
@@ -2845,17 +2852,17 @@ def render_per_solint_QA_pages(sclib,selfcal_plan,bands,directory='weblog'):
 
             htmlOutSolint.writelines('<a href="images/'+sanitize_string(target)+'_'+band+'_'+selfcal_plan[target][band]['solints'][i]+'_'+str(i)+'.image.tt0.png"><img src="images/'+sanitize_string(target)+'_'+band+'_'+selfcal_plan[target][band]['solints'][i]+'_'+str(i)+'.image.tt0.png" ALT="pre-SC-solint image" WIDTH=400 HEIGHT=400></a>\n')
             htmlOutSolint.writelines('<a href="images/'+sanitize_string(target)+'_'+band+'_'+selfcal_plan[target][band]['solints'][i]+'_'+str(i)+'_post.image.tt0.png"><img src="images/'+sanitize_string(target)+'_'+band+'_'+selfcal_plan[target][band]['solints'][i]+'_'+str(i)+'_post.image.tt0.png" ALT="pre-SC-solint image" WIDTH=400 HEIGHT=400></a><br>\n')
-            htmlOutSolint.writelines('Post SC SNR: {:0.3f}'.format(sclib[target][band][vislist[0]][selfcal_plan[target][band]['solints'][i]]['SNR_post'])+'<br>Pre SC SNR: {:0.3f}'.format(sclib[target][band][vislist[0]][selfcal_plan[target][band]['solints'][i]]['SNR_pre'])+'<br><br>\n')
-            htmlOutSolint.writelines('Post SC RMS: {:0.7f}'.format(sclib[target][band][vislist[0]][selfcal_plan[target][band]['solints'][i]]['RMS_post'])+' Jy/beam<br>Pre SC RMS: {:0.7f}'.format(sclib[target][band][vislist[0]][selfcal_plan[target][band]['solints'][i]]['RMS_pre'])+' Jy/beam<br>\n')
-            htmlOutSolint.writelines('Post Beam: {:0.3f}"x{:0.3f}" {:0.3f} deg'.format(sclib[target][band][vislist[0]][selfcal_plan[target][band]['solints'][i]]['Beam_major_post'],sclib[target][band][vislist[0]][selfcal_plan[target][band]['solints'][i]]['Beam_minor_post'],sclib[target][band][vislist[0]][selfcal_plan[target][band]['solints'][i]]['Beam_PA_post'])+'<br>\n')
-            htmlOutSolint.writelines('Pre Beam: {:0.3f}"x{:0.3f}" {:0.3f} deg'.format(sclib[target][band][vislist[0]][selfcal_plan[target][band]['solints'][i]]['Beam_major_pre'],sclib[target][band][vislist[0]][selfcal_plan[target][band]['solints'][i]]['Beam_minor_pre'],sclib[target][band][vislist[0]][selfcal_plan[target][band]['solints'][i]]['Beam_PA_pre'])+'<br><br>\n')
+            htmlOutSolint.writelines('Post SC SNR: {:0.3f}'.format(sclib[target][band][representative_vislist[0]][selfcal_plan[target][band]['solints'][i]]['SNR_post'])+'<br>Pre SC SNR: {:0.3f}'.format(sclib[target][band][representative_vislist[0]][selfcal_plan[target][band]['solints'][i]]['SNR_pre'])+'<br><br>\n')
+            htmlOutSolint.writelines('Post SC RMS: {:0.7f}'.format(sclib[target][band][representative_vislist[0]][selfcal_plan[target][band]['solints'][i]]['RMS_post'])+' Jy/beam<br>Pre SC RMS: {:0.7f}'.format(sclib[target][band][representative_vislist[0]][selfcal_plan[target][band]['solints'][i]]['RMS_pre'])+' Jy/beam<br>\n')
+            htmlOutSolint.writelines('Post Beam: {:0.3f}"x{:0.3f}" {:0.3f} deg'.format(sclib[target][band][representative_vislist[0]][selfcal_plan[target][band]['solints'][i]]['Beam_major_post'],sclib[target][band][representative_vislist[0]][selfcal_plan[target][band]['solints'][i]]['Beam_minor_post'],sclib[target][band][representative_vislist[0]][selfcal_plan[target][band]['solints'][i]]['Beam_PA_post'])+'<br>\n')
+            htmlOutSolint.writelines('Pre Beam: {:0.3f}"x{:0.3f}" {:0.3f} deg'.format(sclib[target][band][representative_vislist[0]][selfcal_plan[target][band]['solints'][i]]['Beam_major_pre'],sclib[target][band][representative_vislist[0]][selfcal_plan[target][band]['solints'][i]]['Beam_minor_pre'],sclib[target][band][representative_vislist[0]][selfcal_plan[target][band]['solints'][i]]['Beam_PA_pre'])+'<br><br>\n')
 
 
             if 'inf_EB' in selfcal_plan[target][band]['solints'][i]:
                htmlOutSolint.writelines('<h3>Phase vs. Frequency Plots:</h3>\n')
             else:
                htmlOutSolint.writelines('<h3>Phase vs. Time Plots:</h3>\n')
-            for vis in vislist:
+            for vis in representative_vislist:
                htmlOutSolint.writelines('<h4>MS: '+vis+'</h4>\n')
                if selfcal_plan[target][band]['solints'][i] not in sclib[target][band][vis] or 'gaintable' not in sclib[target][band][vis][selfcal_plan[target][band]['solints'][i]]:
                     htmlOutSolint.writelines('No gaintable available <br><br>')
@@ -4106,10 +4113,12 @@ def get_min_SNR_spw(snr_per_spw):
    return minsnr
       
 def remove_modes(selfcal_plan,vis,start_index):
+    preferred_mode=selfcal_plan[vis]['solint_settings'][selfcal_plan['solints'][start_index]]['final_mode']
     for j in range(start_index+1,len(selfcal_plan['solints'])):
+       if selfcal_plan['solints'][j] not in selfcal_plan[vis]['solint_settings']:
+           continue
        if 'ap' in selfcal_plan['solints'][j] and 'ap' not in selfcal_plan['solints'][start_index]: # exempt over ap solints since they go back to a longer solint
           continue
-       preferred_mode=selfcal_plan[vis]['solint_settings'][selfcal_plan['solints'][j]]['final_mode']
        if preferred_mode == 'per_bb' or preferred_mode == 'combinespw':
           if 'per_spw' in selfcal_plan[vis]['solint_settings'][selfcal_plan['solints'][j]]['modes_to_attempt']:
              selfcal_plan[vis]['solint_settings'][selfcal_plan['solints'][j]]['modes_to_attempt'].remove('per_spw')

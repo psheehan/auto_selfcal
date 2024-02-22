@@ -524,7 +524,7 @@ for target in selfcal_library:
    for band in selfcal_library[target].keys():
       if selfcal_library[target][band]['SC_success']:
          for vis in selfcal_library[target][band]['vislist']: 
-            solint=selfcal_library[target][band]['final_solint']
+            solint=selfcal_library[target][band][vis]['final_solint']
             iteration=selfcal_library[target][band][vis][solint]['iteration']    
             line='applycal(vis="'+vis.replace('.selfcal','')+'",gaintable='+str(selfcal_library[target][band][vis]['gaintable_final'])+',interp='+str(selfcal_library[target][band][vis]['applycal_interpolate_final'])+', calwt=False,spwmap='+str(selfcal_library[target][band][vis]['spwmap_final'])+', applymode="'+selfcal_library[target][band][vis]['applycal_mode_final']+'",field="'+target+'",spw="'+selfcal_library[target][band][vis]['spws_orig']+'")\n'
             applyCalOut.writelines(line)
