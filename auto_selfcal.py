@@ -112,6 +112,10 @@ sort_targets_and_EBs=True
 run_findcont=False
 debug=False
 
+ephemeris_target = {'ZTF_C2022_E3':'C/2022 E3'} # Input dictionary that maps a target name from the MS files to a name
+                                                # that will be resolved by the JPL Horizons System. Needed to make
+                                                # ephemeris targets with multiple EBs work properly.
+
 if run_findcont and os.path.exists("cont.dat"):
     if np.any([len(parse_contdotdat('cont.dat',target)) == 0 for target in all_targets]):
         if not os.path.exists("cont.dat.original"):
@@ -173,6 +177,8 @@ for vis in vislist:
        flagmanager(vis=vis,mode='restore',versionname='before_line_flags')     
 
 
+
+
 ##
 ## Reimport MS(es) to self calibrate since frequency averaging and splitting may have changed it
 ##
@@ -184,6 +190,32 @@ spwsarray_dict_orig =spwsarray_dict.copy()
 vislist=glob.glob('*selfcal.ms')
 if sort_targets_and_EBs:
     vislist.sort()
+
+if ephemeris_target != None:
+    ##
+    ## If this is an ephemeris source, get the correct ephemerides.
+    ##
+    begin_times, end_times = [], []
+    for vis in vislist:
+        msmd.open(vis)
+        begin_times.append(msmd.timerangeforobs(0)['begin']['m0']['value'])
+        end_times.append(msmd.timerangeforobs(0)['end']['m0']['value'])
+        msmd.close()
+
+    begin = min(begin_times)
+    end = max(end_times)
+
+    for target in all_targets:
+        if target in ephemeris_target:
+            getephemtable(objectname=ephemeris_target[target], timerange=f'MJD {begin-1}~{end+1}', interval='2m', 
+                    outfile=target+'_getephemtable.tab', asis=True, overwrite=True)
+
+            tb.open(target+'_getephemtable.tab', nomodify=False)
+            tb.putkeyword('NAME', target)
+            tb.close()
+
+            for vis in vislist:
+                fixplanets(vis=vis, field=target, direction=target+'_getephemtable.tab')
 
 listdict,bands,band_properties,scantimesdict,scanfieldsdict,scannfieldsdict,scanstartsdict,scanendsdict,integrationsdict,\
 integrationtimesdict,spwslist_dict,spwstring_dict,spwsarray_dict,mosaic_field,gaincalibrator_dict,spectral_scan,spws_set=importdata(vislist,all_targets,telescope)

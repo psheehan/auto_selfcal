@@ -12,6 +12,7 @@ from casatools import image, imager
 from casatools import msmetadata as msmdtool
 from casatools import table as tbtool
 from casatools import ms as mstool
+from casatools import measures as metool
 from casaviewer import imview
 from PIL import Image
 
@@ -20,6 +21,7 @@ tb = tbtool()
 msmd = msmdtool()
 ia = image()
 im = imager()
+me = metool()
 
 def tclean_wrapper(vis, imagename, band_properties,band,telescope='undefined',scales=[0], smallscalebias = 0.6, mask = '',\
                    nsigma=5.0, imsize = None, cellsize = None, interactive = False, robust = 0.5, gain = 0.1, niter = 50000,\
@@ -513,6 +515,13 @@ def fetch_scan_times(vislist,targets):
    return scantimesdict,integrationsdict,integrationtimesdict, integrationtimes,np.max(n_spws),np.min(min_spws),spwslist_dict,spws_set_dict
 
 def fetch_scan_times_band_aware(vislist,targets,band_properties,band):
+   begin_times = []
+   for vis in vislist:
+       msmd.open(vis)
+       begin_times.append(msmd.timerangeforobs(0)['begin']['m0']['value'])
+       msmd.close()
+   begin = min(begin_times)
+
    scantimesdict={}
    scanfieldsdict={}
    scannfieldsdict={}
@@ -555,7 +564,10 @@ def fetch_scan_times_band_aware(vislist,targets,band_properties,band):
 
          mosaic_field[vis][target]['field_ids']=msmd.fieldsforscans(scansdict[vis][target]).tolist()
          mosaic_field[vis][target]['field_ids']=list(set(mosaic_field[vis][target]['field_ids']))
-         mosaic_field[vis][target]['phasecenters'] = [msmd.phasecenter(fid) for fid in mosaic_field[vis][target]['field_ids']]
+         try:
+             mosaic_field[vis][target]['phasecenters'] = [msmd.phasecenter(fid, me.epoch('UTC',{'unit': 'd', 'value': begin})) for fid in mosaic_field[vis][target]['field_ids']]
+         except:
+             mosaic_field[vis][target]['phasecenters'] = [msmd.phasecenter(fid) for fid in mosaic_field[vis][target]['field_ids']]
          if len(mosaic_field[vis][target]['field_ids']) > 1:
             mosaic_field[vis][target]['mosaic']=True
          scantimes=np.array([])
