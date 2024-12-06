@@ -48,11 +48,10 @@ def generate_weblog(sclib,selfcal_plan,directory='weblog'):
    bands_string=', '.join([str(elem) for elem in bands])
    htmlOut.writelines(''+bands_string+'\n')
    htmlOut.writelines('<h2>Solints to Attempt:</h2>\n')
-   for target in targets:
-      for band in selfcal_plan[target].keys():
-         print(target,band,selfcal_plan[target].keys())
-         solints_string=', '.join([str(elem) for elem in selfcal_plan[target][band]['solints']])
-         htmlOut.writelines('<br>'+target+', '+band+': '+solints_string)
+   for target in selfcal_plan:
+       for band in selfcal_plan[target]:
+          solints_string=', '.join([str(elem) for elem in selfcal_plan[target][band]['solints']])
+          htmlOut.writelines('<br>'+target+', '+band+': '+solints_string)
 
    for target in targets:
       htmlOut.writelines('<a name="'+target+'"></a>\n')
@@ -362,8 +361,10 @@ def render_selfcal_solint_summary_table(htmlOut,sclib,target,band,selfcal_plan):
 
                      if quantity =='SPW_Combine_Mode':
                         solint_index=selfcal_plan[target][band]['solints'].index(solint)
-                        if 'combinespw' in sclib[target][band][vis][solint]['final_mode']:
+                        if sclib[target][band][vis][solint]['final_mode'] == 'combinespw':
                            gc_combine_mode='Combine SPW'
+                        if sclib[target][band][vis][solint]['final_mode'] == 'combinespwpol':
+                           gc_combine_mode='Combine SPW & Pol'
                         if sclib[target][band][vis][solint]['final_mode'] == 'per_bb':
                            gc_combine_mode='Per Baseband'
                         if sclib[target][band][vis][solint]['final_mode'] == 'per_spw':
@@ -555,7 +556,9 @@ def render_per_solint_QA_pages(sclib,selfcal_plan,bands,directory='weblog'):
                plot_ants_flagging_colored_from_dict(directory+'/images/plot_ants_'+gaintable+'.png',sclib[target][band][vis],selfcal_plan[target][band][vis],selfcal_plan[target][band]['solints'][i],final_mode,vis)
                htmlOutSolint.writelines('<a href="images/plot_ants_'+gaintable+'.png"><img src="images/plot_ants_'+gaintable+'.png" ALT="antenna positions with flagging plot" WIDTH=400 HEIGHT=400></a>')
                if 'unflagged_lbs' in sclib[target][band][vis][selfcal_plan[target][band]['solints'][i]]:
-                   unflag_failed_antennas(vis, gaintable.replace('.g','.pre-pass.g'), flagged_fraction=0.25, \
+                   unflag_failed_antennas(vis, gaintable.replace('.g','.pre-pass.g'), \
+                           selfcal_plan[target][band][vis]['solint_settings'][selfcal_plan[target][band]['solints'][i]]['gaincal_return_dict'][sclib[target][band][vis][selfcal_plan[target][band]['solints'][i]]['final_mode']], \
+                           flagged_fraction=0.25, \
                            spwmap=sclib[target][band][vis][selfcal_plan[target][band]['solints'][i]]['unflag_spwmap'], \
                            plot=True, plot_directory=directory+'/images/')
                    htmlOutSolint.writelines('\n<a href="images/'+gaintable.replace('.g.','.pre-pass.pass')+'.png"><img src="images/'+gaintable.replace('.g','.pre-pass.pass')+'.png" ALT="Long baseline unflagging thresholds" HEIGHT=400></a><br>\n')
@@ -570,14 +573,18 @@ def render_per_solint_QA_pages(sclib,selfcal_plan,bands,directory='weblog'):
                htmlOutSolint.writelines('Flagged solutions: {:0.0f}<br>'.format(nflagged_sols_total))
                htmlOutSolint.writelines('Fraction Flagged Solutions: {:0.3f} <br><br>'.format(frac_flagged_sols_total))
                print(sclib[target][band][vis][selfcal_plan[target][band]['solints'][i]]['final_mode'])
-               if 'combinespw' in sclib[target][band][vis][selfcal_plan[target][band]['solints'][i]]['final_mode']:
+               if sclib[target][band][vis][selfcal_plan[target][band]['solints'][i]]['final_mode'] == 'combinespw':
                   gc_combine_mode='Combine SPW'
+               if sclib[target][band][vis][selfcal_plan[target][band]['solints'][i]]['final_mode'] == 'combinespwpol':
+                  gc_combine_mode='Combine SPW & Pol'
                if sclib[target][band][vis][selfcal_plan[target][band]['solints'][i]]['final_mode'] == 'per_bb':
                   gc_combine_mode='Per Baseband'
                if sclib[target][band][vis][selfcal_plan[target][band]['solints'][i]]['final_mode'] == 'per_spw':
                   gc_combine_mode='Per SPW'
                if 'fallback' in sclib[target][band][vis][selfcal_plan[target][band]['solints'][i]].keys() and sclib[target][band][vis][selfcal_plan[target][band]['solints'][i]]['fallback']=='spwmap':
                   gc_combine_mode='Per SPW + SPW Mapping'
+               if 'fallback' in sclib[target][band][vis][selfcal_plan[target][band]['solints'][i]].keys() and sclib[target][band][vis][selfcal_plan[target][band]['solints'][i]]['fallback'] == 'combinespwpol':
+                  gc_combine_mode='Combine SPW & Pol'
                htmlOutSolint.writelines('<h4>Gaincal Combine Mode: <font color="red">'+gc_combine_mode+'</font></h4>\n')
                htmlOutSolint.writelines('<h4>Applycal SPW Map: ['+' '.join(map(str,sclib[target][band][vis][selfcal_plan[target][band]['solints'][i]]['spwmap']))+']</h4>\n')
 
