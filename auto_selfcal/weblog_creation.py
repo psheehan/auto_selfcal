@@ -221,6 +221,17 @@ def render_selfcal_solint_summary_table(htmlOut,sclib,target,band,selfcal_plan):
             line+='<th>'+solint+'</th>\n    '
          line+='</tr>\n'
          htmlOut.writelines(line)
+         htmlOut.writelines('<tr bgcolor="#ffffff">\n    <td colspan="'+str(len(solint_list)+1)+'">Solution interval by EB: </td></tr>\n')
+         for vis in vislist:
+             line=f'<tr bgcolor="#ffffff">\n   <td>{vis}: </td>\n'
+             for solint in solint_list:
+                 if solint in selfcal_plan[target][band][vis]['solint_settings']:
+                     line += f'    <td> {selfcal_plan[target][band][vis]["solint_settings"][solint]["interval"]} </td>\n'
+                 else:
+                     line += '    <td> - </td>\n'
+             line += '</tr>\n'
+             htmlOut.writelines(line)
+         htmlOut.writelines('<tr bgcolor="#ffffff">\n    <td colspan="'+str(len(solint_list)+1)+'">Selfcal stats: </td></tr>\n')
          quantities=['Pass','intflux_final','intflux_improvement','SNR_final','SNR_Improvement','SNR_NF_final','SNR_NF_Improvement','RMS_final','RMS_Improvement','RMS_NF_final','RMS_NF_Improvement','Beam_Ratio','clean_threshold','Plots']
          for key in quantities:
             if key =='Pass':
@@ -492,13 +503,20 @@ def render_per_solint_QA_pages(sclib,selfcal_plan,bands,directory='weblog'):
             htmlOutSolint.writelines('<h2>Targets:</h2>\n')
             #keylist=sclib[target][band][vislist[0]].keys()
             solints_string=''
+            print(keylist)
             for j in range(final_solint_index+index_addition):
                if selfcal_plan[target][band]['solints'][j] not in keylist:
                   continue
                solints_string+='<a href="'+target+'_'+band+'_'+selfcal_plan[target][band]['solints'][j]+'.html">'+selfcal_plan[target][band]['solints'][j]+'  </a><br>\n'
             htmlOutSolint.writelines('<br>Solints: '+solints_string)
 
-            htmlOutSolint.writelines('<h3>Solint: '+selfcal_plan[target][band]['solints'][i]+'</h3>\n')       
+            htmlOutSolint.writelines('<h3 style="margin-bottom:0;">Solint: '+selfcal_plan[target][band]['solints'][i]+'</h3>\n')       
+            for ivis, vis in enumerate(representative_vislist):
+                if ivis == len(representative_vislist)-1:
+                    margin_string = 'style="margin-top: 0; padding-top:0;"'
+                else:
+                    margin_string = 'style="margin : 0; padding-top:0;"'
+                htmlOutSolint.writelines(f'<p {margin_string}>{vis}: {selfcal_plan[target][band][vis]["solint_settings"][selfcal_plan[target][band]["solints"][i]]["interval"]}</p>\n')
             keylist_top=sclib[target][band].keys()
             htmlOutSolint.writelines('<a href="index.html#'+target+'_'+band+'">Back to Main Target/Band</a><br>\n')
 
