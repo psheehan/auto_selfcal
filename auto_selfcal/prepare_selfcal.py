@@ -9,6 +9,7 @@ def prepare_selfcal(vislist,
         inf_EB_gaintype='G',
         apply_cal_mode_default='calflag',
         do_amp_selfcal=True,
+        uniform_solints=False,
         usermask={},
         usermodel={},
         debug=False):
@@ -492,12 +493,24 @@ def prepare_selfcal(vislist,
              selfcal_plan[target][band] = {}
              selfcal_plan[target][band]['solints'] = []
              selfcal_plan[target][band]['solmode'] = []
-             for vis in selfcal_library[target][band]['vislist']:
-                 selfcal_plan[target][band][vis] = {}
-                 solints,selfcal_plan[target][band][vis]['integration_time'],selfcal_plan[target][band][vis]['gaincal_combine'], \
-                        tmp_solmodes=get_solints_simple([vis],scantimesdict[band],
+
+             if uniform_solints:
+                 solints,tmp_integration_time,tmp_gaincal_combine, \
+                        tmp_solmodes=get_solints_simple(vislist,scantimesdict[band],
                         scannfieldsdict[band],scanstartsdict[band],scanendsdict[band],integrationtimesdict[band],\
                         inf_EB_gaincal_combine,do_amp_selfcal=do_amp_selfcal,mosaic=selfcal_library[target][band]['obstype'] == 'mosaic')
+
+             for vis in selfcal_library[target][band]['vislist']:
+                 selfcal_plan[target][band][vis] = {}
+
+                 if not uniform_solints:
+                     solints,selfcal_plan[target][band][vis]['integration_time'],selfcal_plan[target][band][vis]['gaincal_combine'], \
+                           tmp_solmodes=get_solints_simple([vis],scantimesdict[band],
+                           scannfieldsdict[band],scanstartsdict[band],scanendsdict[band],integrationtimesdict[band],\
+                           inf_EB_gaincal_combine,do_amp_selfcal=do_amp_selfcal,mosaic=selfcal_library[target][band]['obstype'] == 'mosaic')
+                 else:
+                    selfcal_plan[target][band][vis]['integration_time'] = tmp_integration_time
+                    selfcal_plan[target][band][vis]['gaincal_combine'] = tmp_gaincal_combine
 
                  selfcal_plan[target][band][vis]['solint_settings']={}
 

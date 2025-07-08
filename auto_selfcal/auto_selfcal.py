@@ -46,6 +46,7 @@ def auto_selfcal(
         inf_EB_gaintype='G',
         inf_EB_override=False,
         optimize_spw_combine=True,      # if False, will not attempt per spw or per baseband solutions for any solint except inf_EB
+        uniform_solints=False,
         gaincal_minsnr=2.0,
         gaincal_unflag_minsnr=5.0,
         minsnr_to_proceed=2.95,
@@ -134,7 +135,7 @@ def auto_selfcal(
     selfcal_library, selfcal_plan, gaincalibrator_dict = prepare_selfcal(vislist, spectral_average=spectral_average, 
             sort_targets_and_EBs=sort_targets_and_EBs, scale_fov=scale_fov, inf_EB_gaincal_combine=inf_EB_gaincal_combine, 
             inf_EB_gaintype=inf_EB_gaintype, apply_cal_mode_default=apply_cal_mode_default, do_amp_selfcal=do_amp_selfcal, 
-            usermask=usermask, usermodel=usermodel,debug=debug)
+            uniform_solints=uniform_solints, usermask=usermask, usermodel=usermodel,debug=debug)
 
 
     with open('selfcal_library.pickle', 'wb') as handle:
