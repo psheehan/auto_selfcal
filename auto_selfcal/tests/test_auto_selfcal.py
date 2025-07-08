@@ -50,7 +50,7 @@ def test_benchmark(tmp_path, dataset):
     ex.update_parameters(partition="batch2", nodes=1, ntasks_per_node=8, cpus_per_task=1, use_srun=False, time=10080, \
             mem="128gb", job_name=dataset)
 
-    job = ex.submit(auto_selfcal, sort_targets_and_EBs=True, weblog=True, parallel=True)
+    job = ex.submit(auto_selfcal, sort_targets_and_EBs=True, uniform_solints=True, weblog=True, parallel=True)
     job.wait()
 
     assert job.state in ['DONE','COMPLETED']
@@ -83,7 +83,7 @@ def test_on_github(tmp_path, request, zip_file, link):
     os.system(f'tar xf {zip_file}')
     os.system(f'rm -rf {zip_file}')
 
-    auto_selfcal(sort_targets_and_EBs=True, weblog=True)
+    auto_selfcal(sort_targets_and_EBs=True, uniform_solints=True, weblog=True)
 
     os.system('rm -rf *.ms*') # Delete MS files as space is limited on GitHub.
 
