@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "auto_selfcal"
-version = "3.0"
+version = "2.0"
 authors = [
   { name="John Tobin", email="jtobin@nrao.edu" },
   { name="Patrick Sheehan", email="psheehan@nrao.edu" },
@@ -31,6 +31,7 @@ dependencies = [
 [project.optional-dependencies]
 mpi = ["casampi","mpi4py<4.0.0"]
 test = ["pytest","pytest-xdist","submitit"]
+docs = ["sphinx","sphinx-automodapi","sphinx_book_theme","numpydoc"]
 
 [project.urls]
 Homepage = "https://github.com/jjtobin/auto_selfcal"
