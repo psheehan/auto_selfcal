@@ -55,6 +55,7 @@ parser.add_argument('--uvcontsub_target_ms', action='store_true') # apply final 
 parser.add_argument('--sort_targets_and_EBs', action='store_true')
 parser.add_argument('--run_findcont', action='store_true')
 parser.add_argument('--debug', action='store_true')
+parser.add_argument('--align_EBs', action='store_true')
 
 parser.add_argument('--exit', action='store_true')
 
@@ -72,5 +73,12 @@ elif args.action == "apply":
     applycal_to_orig_MSes(write_only=False)
 elif args.action == "contsub":
     uvcontsub_orig_MSes(write_only=False)
+elif args.action == "align_weblog":
+    from streamlit.web import cli as stcli
+    import os
+
+    app = os.path.dirname(os.path.abspath(__file__))+"/weblog.py"
+    sys.argv = ["streamlit", "run", app]
+    sys.exit(stcli.main())
 
 sys.exit()
