@@ -92,7 +92,20 @@ def test_on_github(tmp_path, request, zip_file, link):
     with open('selfcal_library.pickle', 'rb') as handle:
         selfcal_library2 = pickle.load(handle)
 
-    difference_count = compare_two_dictionaries(selfcal_library1, selfcal_library2, tolerance=0.001)
+    with open('selfcal_plan.pickle', 'rb') as handle:
+        selfcal_plan = pickle.load(handle)
+
+    solint_map = {}
+    for target in selfcal_library2:
+        for band in selfcal_library2[target]:
+            for vis in selfcal_library2[target][band]['vislist']:
+                for solint in selfcal_plan[target][band][vis]['solint_settings']:
+                    if solint not in solint_map:
+                        solint_map[solint] = []
+
+                    solint_map[solint].append(selfcal_plan[target][band][vis]['solint_settings'][solint]['interval'])
+
+    difference_count = compare_two_dictionaries(selfcal_library1, selfcal_library2, tolerance=0.001, key_map=solint_map)
 
     assert difference_count == 0
 
@@ -114,7 +127,7 @@ def compare_values(list1, list2, tol=1e-3):
         else:
             return abs(list1 - list2) < abs(list1*tol)
 
-def compare_two_dictionaries(dictionary1, dictionary2, path=[], exclude=[], tolerance=1e-3):
+def compare_two_dictionaries(dictionary1, dictionary2, path=[], exclude=[], tolerance=1e-3, key_map={}):
     difference_count = 0
 
     all_keys = np.unique(list(dictionary1.keys()) + list(dictionary2.keys()))
@@ -123,7 +136,7 @@ def compare_two_dictionaries(dictionary1, dictionary2, path=[], exclude=[], tole
         if key in exclude:
             continue
 
-        if key not in intersect_keys:
+        if key not in intersect_keys and key not in key_map and not np.any([key in key_map[k] for k in key_map]):
             if key not in dictionary1:
                 print('/'.join([str(p) for p in path])+"/"+key+" not in dictionary1")
             else:
@@ -132,20 +145,33 @@ def compare_two_dictionaries(dictionary1, dictionary2, path=[], exclude=[], tole
             difference_count += 1
 
             continue
+        elif key not in intersect_keys and key not in key_map and np.any([key in key_map[k] for k in key_map]):
+            continue
 
-        if key not in dictionary1 and int(key) in dictionary1:
-            key = int(key)
+        try:
+            if key not in dictionary1 and int(key) in dictionary1:
+                key = int(key)
+        except:
+            continue
 
-        if type(dictionary1[key]) == dict:
-            difference_count += compare_two_dictionaries(dictionary1[key], dictionary2[key], path.copy()+[key], exclude=exclude, tolerance=tolerance)
+        if key in dictionary2 and not key in dictionary1 and key in key_map:
+            for alt_key in key_map:
+                if alt_key in dictionary1:
+                    break
         else:
-            value1 = np.array(dictionary1[key])[np.argsort(dictionary1['vislist'])] if key in ['spws_per_vis','vislist'] else dictionary1[key]
+            alt_key = key
+        
+
+        if type(dictionary1[alt_key]) == dict:
+            difference_count += compare_two_dictionaries(dictionary1[alt_key], dictionary2[key], path.copy()+[key], exclude=exclude, tolerance=tolerance, key_map=key_map)
+        else:
+            value1 = np.array(dictionary1[alt_key])[np.argsort(dictionary1['vislist'])] if alt_key in ['spws_per_vis','vislist'] else dictionary1[alt_key]
             value2 = np.array(dictionary2[key])[np.argsort(dictionary2['vislist'])] if key in ['spws_per_vis','vislist'] else dictionary2[key]
             #value1 = np.array(dictionary1[key])[np.argsort(dictionary1['vislist'])] if key in ['spws_per_vis'] else dictionary1[key]
             #value2 = np.array(dictionary2[key])[np.argsort(dictionary2['vislist'])] if key in ['spws_per_vis'] else dictionary2[key]
 
             if key == 'gaincal_combine':
-                value1 = dictionary1[key].split(',')
+                value1 = dictionary1[alt_key].split(',')
                 value1.sort()
                 value2 = dictionary2[key].split(',')
                 value2.sort()
