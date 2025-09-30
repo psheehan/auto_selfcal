@@ -1283,7 +1283,7 @@ def get_SNR_self_individual(vislist,selfcal_library,n_ant,solints,solint_setting
          solint_snr_per_spw[solint]={}       
          solint_snr_per_bb[solint]={}    
          if solint_settings[solint]['interval'] == 'inf_EB':
-            SNR_self_EB=np.zeros(len(selfcal_library['vislist']))
+            SNR_self_EB=np.zeros(len(vislist))
             SNR_self_EB_spw={}
             SNR_self_EB_bb={}
             for i in range(len(vislist)):
