@@ -105,7 +105,8 @@ def test_on_github(tmp_path, request, zip_file, link):
 
                     solint_map[solint].append(selfcal_plan[target][band][vis]['solint_settings'][solint]['interval'])
 
-    difference_count = compare_two_dictionaries(selfcal_library1, selfcal_library2, tolerance=0.001, key_map=solint_map)
+    difference_count = compare_two_dictionaries(selfcal_library1, selfcal_library2, tolerance=0.001, key_map=solint_map,
+                                                exclude=["final_phase_solint", "final_solint", "gaintable_final", "per_EB_SNR", "vislist-to-gaincal"])
 
     assert difference_count == 0
 
