@@ -164,7 +164,7 @@ def prepare_selfcal(all_targets, bands, bands_for_targets, vislist,
               for vis in vislist:
                   if not fid in selfcal_library[target][band]['sub-fields-fid_map'][vis]:
                       # If a sub-field is not in an EB, it shouldn't be considered for selfcal for that EB
-                      selfcal_library[target][band][vis]['sub-fields-to-selfcal'].pop(fid)
+                      selfcal_library[target][band][vis]['sub-fields-to-selfcal'].remove(fid)
                       continue
 
                   selfcal_library[target][band][fid][vis] = {}

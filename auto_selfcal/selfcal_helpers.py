@@ -1817,6 +1817,7 @@ def get_SNR_self(selfcal_library,selfcal_plan,n_ant,inf_EB_gaincal_combine,inf_E
       for fid in selfcal_library[target][band]['sub-fields']:
           selfcal_plan[target][band][fid] = {}
           for vis in selfcal_library[target][band][fid]['vislist']:
+               print(target, band, vis, fid, selfcal_library[target][band][fid]['vislist'])
                selfcal_plan[target][band][fid][vis] = {}
                solints_per_vis = [solint for solint in selfcal_plan[target][band]['solints'] if solint in selfcal_plan[target][band][vis]['solint_settings']]
                selfcal_plan[target][band][fid][vis]['solint_snr_per_field'], selfcal_plan[target][band][fid][vis]['solint_snr_per_field_per_spw'], \
@@ -1893,15 +1894,21 @@ def get_SNR_self_individual(vislist,selfcal_library,n_ant,solints,solint_setting
                for j in range(len(vislist)):
                   if vislist[j] in selfcal_library['spw_map'][spw]:
                      mean_SNR_spw+=SNR_self_EB_spw[vislist[j]][str(spw)]
-                     total_vis += 1
-               mean_SNR_spw=mean_SNR_spw/total_vis
+                     total_vis += 1 
+               if total_vis > 0:
+                   mean_SNR_spw=mean_SNR_spw/total_vis
+               else:
+                   mean_SNR_spw = 0.0
                solint_snr_per_spw[solint][str(spw)]=mean_SNR_spw
             for baseband in selfcal_library[selfcal_library['vislist'][i]]['baseband']:
                mean_SNR_bb=0.0
                for j in range(len(vislist)):
                   if baseband in SNR_self_EB_bb[vislist[j]].keys():
                      mean_SNR_bb+=SNR_self_EB_bb[vislist[j]][baseband]
-               mean_SNR_bb=mean_SNR_bb/len(vislist) 
+               if len(vislist) > 0:
+                   mean_SNR_bb=mean_SNR_bb/len(vislist) 
+               else:
+                   mean_SNR_bb = 0.0
                print('mean_SNR_bb',mean_SNR_bb,baseband)
                solint_snr_per_bb[solint][baseband]=mean_SNR_bb
             solint_snr[solint]=np.mean(SNR_self_EB)

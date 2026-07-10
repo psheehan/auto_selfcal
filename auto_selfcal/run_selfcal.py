@@ -166,7 +166,7 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, n_ants, \
          ##
          if selfcal_library['final_solint'] != 'None':
              prev_solint = selfcal_library['final_solint']
-             prev_iteration = selfcal_library[vislist[0]][prev_solint]['iteration']
+             prev_iteration = selfcal_library[[vis for vis in selfcal_library['vislist-to-gaincal'] if prev_solint in selfcal_library[vis]][0]][prev_solint]['iteration']
 
              nterms_changed = (len(glob.glob(sani_target+'_'+band+'_'+prev_solint+'_'+str(prev_iteration)+"_post.model.tt*")) < 
                     selfcal_library['nterms'])
@@ -803,7 +803,7 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, n_ants, \
                     print(vis+' now: ',selfcal_plan[vis]['solint_snr'][selfcal_plan['solints'][iteration+1]])
 
                 for fid in selfcal_library['sub-fields-to-selfcal']:
-                    for vis in vislist:
+                    for vis in selfcal_library[fid]['vislist']:
                         if selfcal_plan['solints'][iteration+1] not in selfcal_plan[fid][vis]['solint_snr_per_field']:
                             continue
                         print('Field '+str(fid)+' '+vis+' was: ',selfcal_plan[fid][vis]['solint_snr_per_field'][selfcal_plan['solints'][iteration+1]])
@@ -857,6 +857,9 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, n_ants, \
          for vis in vislist:
             new_fields_to_selfcal = []
             for fid in selfcal_library['sub-fields']:
+                if vis not in selfcal_library[fid]['vislist']:
+                    continue
+                
                 if mode == "cocal":
                     if ("inf_EB" in selfcal_library[fid]['vislist'][0] and selfcal_library[fid][vis][coarsest_solint]["Pass"]) or selfcal_library[fid][selfcal_library[fid]['vislist'][0]][coarsest_solint+"_fb"]["Pass"]:
                         new_fields_to_selfcal.append(fid)
