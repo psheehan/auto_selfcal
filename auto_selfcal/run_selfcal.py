@@ -764,13 +764,17 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, n_ants, \
                  # because the solint failed, because for mosaics we can keep trying the field as we clean deeper. If we set to False now, that wont happen.
                  for fid in np.intersect1d(selfcal_library['sub-fields'],list(selfcal_library['sub-fields-fid_map'][vis].keys())):
                     if (selfcal_library['final_solint'] == 'inf_EB' and selfcal_library['inf_EB_SNR_decrease']) or \
-                            ((not selfcal_library[vislist[0]][solint]['Pass'] or solint == 'int') and \
+                            (np.any([not selfcal_library[vis][solint]['Pass'] or selfcal_plan[vis]['solint_settings'][solint]['sub-name'] == 'int' for vis in selfcal_library[fid]['vislist-to-gaincal']]) and \
                             (selfcal_library[fid]['final_solint'] == 'inf_EB' and selfcal_library[fid]['inf_EB_SNR_decrease'])):
-                       selfcal_library[fid]['SC_success']=False
-                       selfcal_library[fid]['final_solint']='None'
-                       for vis in selfcal_library[fid]['vislist']:
-                          selfcal_library[fid][vis]['inf_EB']['Pass']=False    #  remove the success from inf_EB
-                          selfcal_library[fid][vis]['inf_EB']['Fail_Reason']+=' with no successful solints later'    #  remove the success from inf_EB
+                       
+                       for vis in selfcal_library[fid]['vislist-to-gaincal']:
+                          if not selfcal_library[vis][solint]['Pass'] or selfcal_plan[vis]['solint_settings'][solint]['sub-name'] == 'int':
+                            selfcal_library[fid][vis]['inf_EB']['Pass']=False    #  remove the success from inf_EB
+                            selfcal_library[fid][vis]['inf_EB']['Fail_Reason']+=' with no successful solints later'    #  remove the success from inf_EB
+
+                       if np.all([not selfcal_library[fid][vis]['inf_EB']['Pass'] for vis in selfcal_library[fid]['vislist']]):
+                           selfcal_library[fid]['SC_success']=False
+                           selfcal_library[fid]['final_solint']='None'
 
              for vis in vislist:
                  applycal_wrapper(vis, target, band, solint, selfcal_library, 
