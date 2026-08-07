@@ -61,7 +61,7 @@ def test_benchmark(tmp_path, dataset):
     if 'VLBA' in dataset:
         job = ex.submit(auto_selfcal, sort_targets_and_EBs=True, weblog=True, parallel=True, iscalibrator=True, targets='J1154+6022',applytargets='J1203+6031',imsize=640,cell='0.0002arcsec')
     else:
-        job = ex.submit(auto_selfcal, sort_targets_and_EBs=True, weblog=True, parallel=True)
+        job = ex.submit(auto_selfcal, sort_targets_and_EBs=True, weblog=True, parallel=True, uniform_solints=True)
     job.wait()
 
     assert job.state in ['DONE','COMPLETED']
@@ -91,8 +91,8 @@ def test_benchmark(tmp_path, dataset):
      exclude=['vislist_orig','field_str','imsize','flux_threshold','overlap_tol','bands_for_targets',\
          'am_dogrowprune','am_growiterations','am_lownoisethreshold','am_minbeamfrac',\
          'am_noisethreshold','am_sidelobethreshold','am_smoothfactor','telescope', "final_phase_solint", "final_solint", \
-         "gaintable_final", "per_EB_SNR", "vislist-to-gaincal", "telescope", "gaintable","sub-fields-to-gaincal", \
-         "sub-fields-to-selfcal"])
+         "gaintable_final", "per_EB_SNR", "per_scan_SNR", "vislist-to-gaincal", "telescope", "gaintable","sub-fields-to-gaincal", \
+         "sub-fields-to-selfcal", "Stop_Reason"])
 
     for msfile in starting_MS_files:
         print(f"rm -rf {os.path.basename(msfile)}")
