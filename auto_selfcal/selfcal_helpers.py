@@ -1897,9 +1897,9 @@ def get_SNR_self_individual(vislist,selfcal_library,n_ant,solints,solint_setting
                      total_vis += 1 
                if total_vis > 0:
                    mean_SNR_spw=mean_SNR_spw/total_vis
+                   solint_snr_per_spw[solint][str(spw)]=mean_SNR_spw
                else:
                    mean_SNR_spw = 0.0
-               solint_snr_per_spw[solint][str(spw)]=mean_SNR_spw
             for baseband in selfcal_library[selfcal_library['vislist'][i]]['baseband']:
                mean_SNR_bb=0.0
                for j in range(len(vislist)):
