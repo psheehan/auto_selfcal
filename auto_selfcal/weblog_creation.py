@@ -250,8 +250,26 @@ def render_selfcal_solint_summary_table(htmlOut,sclib,target,band,selfcal_plan):
                      line += '    <td> - </td>\n'
              line += '</tr>\n'
              htmlOut.writelines(line)
+         htmlOut.writelines('<tr bgcolor="#ffffff">\n    <td colspan="'+str(len(solint_list)+1)+'">Result: </td></tr>\n')
+         for vis in vislist:
+            line=f'<tr bgcolor="#ffffff">\n   <td>{vis}: </td>\n'
+            for solint in solint_list:
+                if solint in sclib[target][band][vis]:
+                    if 'Pass' in sclib[target][band][vis][solint]:
+                     if sclib[target][band][vis][solint]['Pass'] == False:
+                        line+='    <td><font color="red">{}</font> {}</td>\n'.format('Fail',sclib[target][band][vis][solint]['Fail_Reason'])
+                     elif sclib[target][band][vis][solint]['Pass'] == 'None':
+                        line+='    <td><font color="green">{}</font> {}</td>\n'.format('Not attempted',sclib[target][band][vis][solint]['Fail_Reason'])
+                     else:
+                        line+='    <td><font color="blue">{}</font></td>\n'.format('Pass')
+                    else:
+                        line+='    <td><font color="green">{}</font></td>\n'.format('None')
+                else:
+                    line += '    <td> - </td>\n'
+            line += '</tr>\n'
+            htmlOut.writelines(line)
          htmlOut.writelines('<tr bgcolor="#ffffff">\n    <td colspan="'+str(len(solint_list)+1)+'">Selfcal stats: </td></tr>\n')
-         quantities=['Pass','intflux_final','intflux_improvement','SNR_final','SNR_Improvement','SNR_NF_final','SNR_NF_Improvement','RMS_final','RMS_Improvement','RMS_NF_final','RMS_NF_Improvement','Beam_Ratio','clean_threshold','Plots']
+         quantities=['intflux_final','intflux_improvement','SNR_final','SNR_Improvement','SNR_NF_final','SNR_NF_Improvement','RMS_final','RMS_Improvement','RMS_NF_final','RMS_NF_Improvement','Beam_Ratio','clean_threshold','Plots']
          for key in quantities:
             if key =='Pass':
                line='<tr bgcolor="#ffffff">\n    <td>Result: </td>\n'
@@ -283,7 +301,10 @@ def render_selfcal_solint_summary_table(htmlOut,sclib,target,band,selfcal_plan):
                line='<tr bgcolor="#ffffff">\n    <td>Plots: </td>\n'
             for solint in solint_list:
                if np.any([solint in sclib[target][band][vis] for vis in vislist]):
-                   ivis = np.where([solint in sclib[target][band][vis] for vis in vislist])[0][0]
+                   if np.any([sclib[target][band][vis][solint]['Pass'] != 'None' for vis in vislist]):
+                     ivis = np.where([solint in sclib[target][band][vis] and sclib[target][band][vis][solint]['Pass'] != 'None' for vis in vislist])[0][0]
+                   else:
+                     ivis = np.where([solint in sclib[target][band][vis] for vis in vislist])[0][0]
                else:
                    ivis = len(vislist)-1
 
