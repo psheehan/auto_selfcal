@@ -130,6 +130,10 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, n_ants, \
                           ' **************')
                   remove_vis.append(vis)
 
+                  selfcal_library[vis]['Stop_Reason']='Estimated_SNR_too_low_for_solint '+selfcal_plan['solints'][iteration]
+                  for fid in selfcal_library['sub-fields-to-selfcal']:
+                      selfcal_library[fid][vis]['Stop_Reason']='Estimated_SNR_too_low_for_solint '+selfcal_plan['solints'][iteration]
+
           for rvis in remove_vis:
               vislist.remove(rvis)
 
@@ -140,10 +144,6 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, n_ants, \
             print('****************Attempting amplitude selfcal*************')
             continue
 
-         for vis in vislist:
-            selfcal_library[vis]['Stop_Reason']='Estimated_SNR_too_low_for_solint '+selfcal_plan['solints'][iteration]
-            for fid in selfcal_library['sub-fields-to-selfcal']:
-                selfcal_library[fid][vis]['Stop_Reason']='Estimated_SNR_too_low_for_solint '+selfcal_plan['solints'][iteration]
          break
       else:
          selfcal_library['vislist-to-gaincal'] = vislist
@@ -435,10 +435,10 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, n_ants, \
              print('****************Not all fields were successful, so re-applying and re-making _post image*************')
              for vis in vislist:
                  applycal_wrapper(vis, target, band, solint, selfcal_library, 
-                         current=lambda f: f in field_by_field_success_dict and field_by_field_success_dict[f],
-                         final=lambda f: (f not in field_by_field_success_dict or not field_by_field_success_dict[f]) and 
+                         current=lambda f: f in field_by_field_success_dict and field_by_field_success_dict[f] and f in selfcal_library[vis]['sub-fields-to-selfcal'],
+                         final=lambda f: (f not in field_by_field_success_dict or not field_by_field_success_dict[f] or f not in selfcal_library[vis]['sub-fields-to-selfcal']) and 
                              selfcal_library[f]['SC_success'],
-                         clear=lambda f: (f not in field_by_field_success_dict or not field_by_field_success_dict[f]) and 
+                         clear=lambda f: (f not in field_by_field_success_dict or not field_by_field_success_dict[f] or f not in selfcal_library[vis]['sub-fields-to-selfcal']) and 
                              not selfcal_library[f]['SC_success'],
                          restore_flags='selfcal_starting_flags_'+sani_target+'_'+band)
 
@@ -568,6 +568,8 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, n_ants, \
                        selfcal_library[fid]['inf_EB_SNR_decrease']=False
 
                     for vis in selfcal_library[fid]['vislist-to-gaincal']:
+                       if fid not in selfcal_library[vis]['sub-fields-to-selfcal']:
+                           continue
                        # I think the below might not be correct for mosaics - it would set the gaintable even if fid is not in [vis]['sub-fields-to-selfcal'].
                        # I think this needs:
                        # if fid not in selfcal_library[vis]['sub-fields-to-selfcal']:
@@ -700,7 +702,7 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, n_ants, \
                     reason=reason+'; '
                 reason=reason+'All sub-fields failed'
             for vis in vislist:
-               selfcal_library['Stop_Reason']=reason
+               selfcal_library[vis]['Stop_Reason']=reason
                #selfcal_library[vis][solint]['Pass']=False
                selfcal_library[vis][solint]['Fail_Reason']=reason
 
