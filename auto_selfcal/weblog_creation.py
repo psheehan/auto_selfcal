@@ -301,7 +301,7 @@ def render_selfcal_solint_summary_table(htmlOut,sclib,target,band,selfcal_plan):
                line='<tr bgcolor="#ffffff">\n    <td>Plots: </td>\n'
             for solint in solint_list:
                if np.any([solint in sclib[target][band][vis] for vis in vislist]):
-                   if np.any([sclib[target][band][vis][solint]['Pass'] != 'None' for vis in vislist]):
+                   if np.any([sclib[target][band][vis][solint]['Pass'] != 'None' for vis in vislist if solint in sclib[target][band][vis]]):
                      ivis = np.where([solint in sclib[target][band][vis] and sclib[target][band][vis][solint]['Pass'] != 'None' for vis in vislist])[0][0]
                    else:
                      ivis = np.where([solint in sclib[target][band][vis] for vis in vislist])[0][0]
