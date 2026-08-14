@@ -809,7 +809,7 @@ def run_selfcal(selfcal_library, selfcal_plan, target, band, n_ants, \
                     print(vis+' now: ',selfcal_plan[vis]['solint_snr'][selfcal_plan['solints'][iteration+1]])
 
                 for fid in selfcal_library['sub-fields-to-selfcal']:
-                    for vis in selfcal_library[fid]['vislist']:
+                    for vis in selfcal_library[fid]['vislist-to-gaincal']:
                         if selfcal_plan['solints'][iteration+1] not in selfcal_plan[fid][vis]['solint_snr_per_field']:
                             continue
                         print('Field '+str(fid)+' '+vis+' was: ',selfcal_plan[fid][vis]['solint_snr_per_field'][selfcal_plan['solints'][iteration+1]])
