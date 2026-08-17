@@ -76,7 +76,7 @@ def generate_weblog(sclib,selfcal_plan,directory='weblog'):
          if 'offsets' in sclib[target][band]:
             htmlOut.writelines('Aligned EBs?: <a href="align.html#'+target+'"> True</a><br>\n')
          else:
-            htmlOut.writelines('Aligned EBs?: False\n')
+            htmlOut.writelines('Aligned EBs?: False <br>\n')
          htmlOut.writelines('Selfcal Success?: '+str(sclib[target][band]['SC_success'])+'<br>\n')
          keylist=sclib[target][band].keys()
          if np.all(['Stop_Reason' not in sclib[target][band][vis].keys() for vis in sclib[target][band]['vislist']]):
@@ -86,7 +86,10 @@ def generate_weblog(sclib,selfcal_plan,directory='weblog'):
                continue
          else:   
             for vis in sclib[target][band]['vislist']:
-               htmlOut.writelines(vis + 'Stop Reason: '+str(sclib[target][band][vis]['Stop_Reason'])+'<br><br>\n')
+               if vis == sclib[target][band]['vislist'][-1]:
+                  htmlOut.writelines(vis + 'Stop Reason: '+str(sclib[target][band][vis]['Stop_Reason'])+'<br><br>\n')
+               else:
+                  htmlOut.writelines(vis + 'Stop Reason: '+str(sclib[target][band][vis]['Stop_Reason'])+'<br>\n')
                print(vis, target,band,sclib[target][band][vis]['Stop_Reason'])
             if ((np.all(['Estimated_SNR_too_low_for_solint' in sclib[target][band][vis]['Stop_Reason'] for vis in sclib[target][band]['vislist']])) or \
                 (np.all(['Selfcal_Not_Attempted' in sclib[target][band][vis]['Stop_Reason'] for vis in sclib[target][band]['vislist']]))) and sclib[target][band]['final_solint']=='None':
