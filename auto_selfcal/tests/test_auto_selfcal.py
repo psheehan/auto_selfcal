@@ -101,17 +101,22 @@ def test_benchmark(tmp_path, dataset):
 
 # Note for future reference: to create the tar file properly, update the files in the folder on OneDrive, and then run:
 # tar czf Band8-7m-2.tar.gz -C Band8-7m-2 .
+# Once uploaded to OneDrive, you need to:
+# - Click "Share"
+# - Go to settings and make sure Anyone can access
+# - Then hit "Copy Link"
+# To ensure that the link you get is publicly accessible.
 @pytest.mark.ghtest
 @pytest.mark.parametrize(
     "zip_file,link",
     [
-        pytest.param("2018.1.01284.S_HOPS-384.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQCvDRlo5TabTZ8qoP-tscZnAZGq9ArrhINJJPOewgSF9cc?e=aQi7EQ&download=1', id="2018.1.01284.S_HOPS-384"),
-        pytest.param("Band8-7m-2.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQAnFUlx_SR0SLdj_vX8MVUWASzWWsG43Bj1XZdGYmuUsJE?e=hniYPJ&download=1', id="Band8-7m-2"),
-        pytest.param("M82-C-conf-C-band_small.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQCT-CkbAW7YT5LIev5CrDSOAY_Y-dg3oXlKlnLiA1CQE1s?e=gmFMNS&download=1', id="M82-C-conf-C-band_small"),
-        pytest.param("K-band-mini-mosaic.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQBCQc-REEGYQrBwBu2F9uUTAbiIrwkUvrZHbDTabRQnh7M?e=rpDwGf&download=1', id='K-band-mini-mosaic'),
-        pytest.param("Band8-7m-cocal.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQAjUGmKxJpoSq25LNp6qnhUAWXWqyoyO9XIPTKfFv7Sv5I?e=UbPOyd&download=1', id='Band8-7m-cocal'),
-        pytest.param("2019.1.00691.S_SB.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQAoeNLrwb1aSrWCfo8ekE6NAWOUSp6JIvfEPMsP2woKVTg?e=FsBV2N&download=1', id='2019.1.00691.S_SB'),
-        pytest.param("VLBA-1-spw.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQATgZY3r_6MS50DqJaFu4QIAdfFN6pFZriXGA-2uQtwhRE?e=XSvf99&download=1', id='VLBA-1-spw')
+        pytest.param("2018.1.01284.S_HOPS-384.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQCvDRlo5TabTZ8qoP-tscZnAdJZOuCKQew3ewIH5bZzZF0?e=gkf7TS&download=1', id="2018.1.01284.S_HOPS-384"),
+        pytest.param("Band8-7m-2.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQAnFUlx_SR0SLdj_vX8MVUWAbMu9BveHCsb9NB07-OD3bo?e=UyouM4&download=1', id="Band8-7m-2"),
+        pytest.param("M82-C-conf-C-band_small.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQCT-CkbAW7YT5LIev5CrDSOAZt5uC_tUIReMwlA14Tu9y4?e=dBKNYC&download=1', id="M82-C-conf-C-band_small"),
+        pytest.param("K-band-mini-mosaic.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQBCQc-REEGYQrBwBu2F9uUTAfpCRQq1gYAPO18e-CL_IUk?e=IQYNrv&download=1', id='K-band-mini-mosaic'),
+        pytest.param("Band8-7m-cocal.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQAjUGmKxJpoSq25LNp6qnhUAfhcQ-o3RnP7q13r0OgPCfc?e=rjgG4k&download=1', id='Band8-7m-cocal'),
+        pytest.param("2019.1.00691.S_SB.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQAoeNLrwb1aSrWCfo8ekE6NAXVJ4Qlpps0gdAeY1U9Axn0?e=IIcRdp&download=1', id='2019.1.00691.S_SB'),
+        pytest.param("VLBA-1-spw.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQATgZY3r_6MS50DqJaFu4QIAVn9jnOq2X-oubxzGtY8-bM?e=eLLGi0&download=1', id='VLBA-1-spw')
     ]
 )
 def test_on_github(tmp_path, request, zip_file, link):
