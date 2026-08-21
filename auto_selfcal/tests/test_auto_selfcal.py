@@ -111,7 +111,7 @@ def test_benchmark(tmp_path, dataset):
     "zip_file,link",
     [
         pytest.param("2018.1.01284.S_HOPS-384.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQCvDRlo5TabTZ8qoP-tscZnAdJZOuCKQew3ewIH5bZzZF0?e=gkf7TS&download=1', id="2018.1.01284.S_HOPS-384"),
-        pytest.param("Band8-7m-2.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQAnFUlx_SR0SLdj_vX8MVUWAbMu9BveHCsb9NB07-OD3bo?e=UyouM4&download=1', id="Band8-7m-2"),
+        pytest.param("Band8-7m-2.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQAnFUlx_SR0SLdj_vX8MVUWAbMu9BveHCsb9NB07-OD3bo?e=VHwhw1&download=1', id="Band8-7m-2"),
         pytest.param("M82-C-conf-C-band_small.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQCT-CkbAW7YT5LIev5CrDSOAZt5uC_tUIReMwlA14Tu9y4?e=dBKNYC&download=1', id="M82-C-conf-C-band_small"),
         pytest.param("K-band-mini-mosaic.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQBCQc-REEGYQrBwBu2F9uUTAfpCRQq1gYAPO18e-CL_IUk?e=IQYNrv&download=1', id='K-band-mini-mosaic'),
         pytest.param("Band8-7m-cocal.tar.gz", 'https://nrao-my.sharepoint.com/:u:/g/personal/psheehan_nrao_edu/IQAjUGmKxJpoSq25LNp6qnhUAfhcQ-o3RnP7q13r0OgPCfc?e=rjgG4k&download=1', id='Band8-7m-cocal'),
